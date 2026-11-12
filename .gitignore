@@ -1,0 +1,108 @@
+# ============================================================================
+# .gitignore — Image Automation
+# Prevents sensitive data, credentials, browser profiles, databases,
+# generated output, and dev artifacts from being committed.
+# ============================================================================
+
+# ── Databases (contain accounts, passwords, session state) ──────────────────
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+*.db-wal
+*.db-shm
+
+# ── Browser profiles (cookies, logins, session data, browser cache) ─────────
+profiles/
+
+# ── Generated output ────────────────────────────────────────────────────────
+output/
+
+# ── Environment variables & secrets ─────────────────────────────────────────
+.env
+.env.*
+*.env
+.env.local
+.env.development
+.env.production
+.env.staging
+secrets.json
+secrets.yaml
+secrets.yml
+config.local.*
+
+# ── API keys & credentials files ────────────────────────────────────────────
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+service-account*.json
+credentials.json
+token.json
+
+# ── Python virtual environments ─────────────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+.conda/
+
+# ── Python bytecode & caches ────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+
+# ── Testing & coverage ──────────────────────────────────────────────────────
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+*.cover
+
+# ── Type checking & linting caches ──────────────────────────────────────────
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.ruff_cache/
+.pylint.d/
+
+# ── Distribution & build ────────────────────────────────────────────────────
+dist/
+build/
+*.egg-info/
+*.egg
+*.whl
+
+# ── Logs ────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── IDE / Editor settings ──────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# ── OS-generated files ──────────────────────────────────────────────────────
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+
+# ── Playwright / browser automation state ───────────────────────────────────
+playwright-report/
+test-results/
+blob-report/
