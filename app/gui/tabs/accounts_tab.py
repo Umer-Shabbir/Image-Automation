@@ -272,11 +272,14 @@ class AccountsTab(BaseTab):
         def _launch():
             async def _run():
                 from copy import deepcopy
+                import os
+                from pathlib import Path
                 settings = AppState.instance().db.get_settings()
                 s = deepcopy(settings)
                 setattr(s, 'headless', False)
 
-                auto = GoogleFlowAutomator(profile_dir=f"profiles/{acct_id}", settings=s)
+                profiles_dir = Path(os.getenv("PROFILES_DIR", "profiles"))
+                auto = GoogleFlowAutomator(profile_dir=str(profiles_dir / acct_id), settings=s)
 
                 await auto.start()
                 print(f"[{acct_id}] Browser launched for manual login. Waiting...")

@@ -5,6 +5,7 @@ Handles job execution with character consistency tagging, model/aspect-ratio par
 """
 
 import asyncio
+import os
 import threading
 import time
 import queue
@@ -54,10 +55,19 @@ def compute_job_save_path(job: Job, settings: Optional[Any] = None, mode: Option
         # Check if topic_slug / topic_name folder exists under output directories
         out_base = Path(getattr(settings, "output_dir", "output") if settings else "output")
         slug_or_name = getattr(job, 'topic_slug', '') or getattr(job, 'topic_name', '')
-        candidate_dirs = [
-            out_base / slug_or_name,
-            Path("H:/Automation/output") / slug_or_name
-        ]
+        candidate_dirs = [out_base / slug_or_name]
+
+        # Dynamic sibling and environment-configured output directories
+        env_out = os.getenv("OUTPUT_DIR")
+        if env_out:
+            cand_env = Path(env_out) / slug_or_name
+            if cand_env not in candidate_dirs:
+                candidate_dirs.append(cand_env)
+
+        sibling_out = Path(__file__).resolve().parent.parent / "output" / slug_or_name
+        if sibling_out not in candidate_dirs:
+            candidate_dirs.append(sibling_out)
+
         for cdir in candidate_dirs:
             if cdir.exists():
                 proj_folder = str(cdir)
@@ -129,7 +139,8 @@ class AccountWorker:
         self._thread        = None
         self._auto: Optional[GoogleFlowAutomator] = None
         self._topic         = None
-        self._profile       = str(Path("profiles") / account.id)
+        profiles_dir        = Path(os.getenv("PROFILES_DIR", "profiles"))
+        self._profile       = str(profiles_dir / account.id)
         self._loop          = None
 
         self._start_time:        float = 0.0
@@ -499,7 +510,17 @@ class AccountWorker:
         proj_folder = getattr(job, "project_folder", None)
         if not proj_folder and (getattr(job, "topic_slug", "") or getattr(job, "topic_name", "")):
             slug = getattr(job, "topic_slug", "") or getattr(job, "topic_name", "")
-            for base in [Path("H:/Automation/output"), Path(self._s("output_dir", "output"))]:
+            bases = [Path(self._s("output_dir", "output"))]
+            env_out = os.getenv("OUTPUT_DIR")
+            if env_out:
+                cand_env = Path(env_out)
+                if cand_env not in bases:
+                    bases.append(cand_env)
+            sibling_out = Path(__file__).resolve().parent.parent / "output"
+            if sibling_out not in bases:
+                bases.append(sibling_out)
+
+            for base in bases:
                 cand = base / slug
                 if (cand / "project.json").exists() or (cand / "metadata.json").exists():
                     proj_folder = str(cand)
@@ -523,12 +544,19 @@ class AccountWorker:
             try:
                 import json, re
                 registry = None
-                possible_paths = [
-                    Path("H:/Automation/Presets/master_presets_registry.json"),
+                possible_paths = []
+                presets_env = os.getenv("PRESETS_REGISTRY_PATH") or os.getenv("PRESETS_PATH")
+                if presets_env:
+                    possible_paths.append(Path(presets_env))
+                presets_dir_env = os.getenv("PRESETS_DIR")
+                if presets_dir_env:
+                    possible_paths.append(Path(presets_dir_env) / "master_presets_registry.json")
+
+                possible_paths.extend([
                     Path(__file__).resolve().parent.parent / "Presets" / "master_presets_registry.json",
                     Path(__file__).resolve().parent / "Presets" / "master_presets_registry.json",
                     Path("Presets/master_presets_registry.json")
-                ]
+                ])
                 for p in possible_paths:
                     if p.exists():
                         registry = json.loads(p.read_text(encoding="utf-8"))

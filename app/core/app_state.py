@@ -6,8 +6,9 @@ _ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if _ROOT not in sys.path:
     sys.path.insert(0, _ROOT)
 
-from database import Database
+from database import Database, DB_PATH
 from queue_manager import QueueManager
+from app.core.config import ensure_runtime_directories
 
 class AppState:
     _instance = None
@@ -23,7 +24,8 @@ class AppState:
         return cls._instance
 
     def initialize(self):
-        self.db = Database('gpt_batch.db')
+        ensure_runtime_directories()
+        self.db = Database(DB_PATH)
         self.queue_mgr = QueueManager(self.db)
         self.queue_mgr.load()
 

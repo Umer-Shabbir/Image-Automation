@@ -7,15 +7,22 @@ Supports Accounts, Jobs, Characters, and Settings persistence for Google Flow.
 import sqlite3
 import json
 from contextlib import contextmanager
-from typing import List
+import os
+from pathlib import Path
+from typing import List, Optional
 from models import Account, Job, Settings, Workspace, Character
 
-DB_PATH = "gpt_batch.db"
+# Dynamic DB_PATH resolution (respects DB_PATH / DATABASE_PATH or defaults to project root)
+PROJECT_ROOT = Path(__file__).resolve().parent
+DB_PATH = os.getenv("DB_PATH", os.getenv("DATABASE_PATH", str(PROJECT_ROOT / "gpt_batch.db")))
 
 
 class Database:
-    def __init__(self, db_path: str = DB_PATH):
-        self.db_path = db_path
+    def __init__(self, db_path: Optional[str] = None):
+        self.db_path = str(db_path) if db_path is not None else DB_PATH
+        # Self-healing: ensure parent directory exists for SQLite database file
+        if self.db_path and self.db_path != ":memory:":
+            Path(self.db_path).parent.mkdir(parents=True, exist_ok=True)
         self._init()
 
     @contextmanager

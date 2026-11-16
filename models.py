@@ -6,6 +6,7 @@ Supports Character Consistency, Multi-Model Selection, Image/Video Generation, a
 
 from dataclasses import dataclass, field, asdict
 from typing import List, Dict, Any
+import os
 import time
 import uuid
 
@@ -286,15 +287,15 @@ class Job:
 @dataclass
 class Settings:
     # â”€â”€ Output â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-    output_dir:            str   = "output"
+    output_dir:            str   = field(default_factory=lambda: os.getenv("OUTPUT_DIR", "output"))
     filename_template:     str   = "{topicSlug}/{topicSlug}_{promptIndex}_{promptSlug}.png"
     max_slug_chars:        int   = 60
     min_image_bytes:       int   = 30_000      # minimum file size sanity check
 
     # ── Target Platform & URLs ───────────────────────────────────────────────────
     generation_platform:   str   = GenerationPlatform.FLOW  # "flow" or "bulk_app"
-    flow_url:              str   = "https://flow.google.com"
-    bulk_app_url:          str   = "https://gemini.google.com/share/79e5de5150e6"
+    flow_url:              str   = field(default_factory=lambda: os.getenv("FLOW_URL", "https://flow.google.com"))
+    bulk_app_url:          str   = field(default_factory=lambda: os.getenv("BULK_APP_URL", "https://gemini.google.com/share/79e5de5150e6"))
     bulk_batch_size:       int   = 10  # number of prompts to batch in bulk platform mode
 
     # ── Google Flow Generation Controls ──────────────────────────────────────────
@@ -343,8 +344,8 @@ class Settings:
 
     # Validation settings
     enable_validation:     bool  = False
-    validation_api_key:    str   = ''
-    validation_model:      str   = 'claude-3-haiku-20240307'
+    validation_api_key:    str   = field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY", os.getenv("VALIDATION_API_KEY", "")))
+    validation_model:      str   = field(default_factory=lambda: os.getenv("VALIDATION_MODEL", "claude-3-haiku-20240307"))
 
     # ── Browser navigation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     page_load_settle:      float = 2.0   # after page navigation
@@ -380,8 +381,8 @@ class Settings:
 
     # Validation settings
     enable_validation:     bool  = False
-    validation_api_key:    str   = ''
-    validation_model:      str   = 'claude-3-haiku-20240307'
+    validation_api_key:    str   = field(default_factory=lambda: os.getenv("ANTHROPIC_API_KEY", os.getenv("VALIDATION_API_KEY", "")))
+    validation_model:      str   = field(default_factory=lambda: os.getenv("VALIDATION_MODEL", "claude-3-haiku-20240307"))
 
     # ── Browser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     headless:              bool  = False

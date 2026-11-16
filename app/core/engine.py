@@ -1,7 +1,9 @@
 import asyncio
+import os
 import queue
 import threading
 import time
+from pathlib import Path
 from typing import Dict, Optional
 
 from PySide6.QtCore import QObject, Signal, QThread, Slot
@@ -70,7 +72,9 @@ class EngineThread(QThread):
             try:
                 dt_str = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(now))
                 pfx = f"[{acct_id[:8]}]" if acct_id else "[SYSTEM]"
-                with open("app.log", "a", encoding="utf-8") as f:
+                log_file = Path(os.getenv("LOG_FILE", "logs/app.log"))
+                log_file.parent.mkdir(parents=True, exist_ok=True)
+                with open(log_file, "a", encoding="utf-8") as f:
                     f.write(f"[{dt_str}] {pfx} [{level.upper()}] {msg}\n")
             except Exception:
                 pass
