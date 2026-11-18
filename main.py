@@ -7,14 +7,38 @@ import sys
 import os
 
 def main():
-    # ── Windows: UTF-8 console output ─────────────────────────────────────────
-    if os.name == "nt":
-        if sys.stdout and hasattr(sys.stdout, "reconfigure"):
+    # ── Universal UTF-8 console output ────────────────────────────────────────
+    for stream in (sys.stdout, sys.stderr):
+        if stream and hasattr(stream, "reconfigure"):
             try:
-                sys.stdout.reconfigure(encoding="utf-8")
-                sys.stderr.reconfigure(encoding="utf-8")
+                stream.reconfigure(encoding="utf-8")
             except Exception:
                 pass
+
+    # ── Handle CLI options before GUI initialization ──────────────────────────
+    if "--help" in sys.argv or "-h" in sys.argv:
+        print("Usage: python main.py [OPTIONS]")
+        print("")
+        print("Options:")
+        print("  --check, --dry-run   Perform runtime environment & self-healing checks then exit.")
+        print("  --help, -h           Show this help message and exit.")
+        sys.exit(0)
+
+    # ── Initialize environment & runtime directories ──────────────────────────
+    from app.core.config import ensure_runtime_directories, load_environment, DB_PATH
+    load_environment()
+    ensure_runtime_directories()
+
+    if "--check" in sys.argv or "--dry-run" in sys.argv:
+        print("[✓] Runtime directories verified and created.")
+        from app.core.app_state import AppState
+        state = AppState.instance()
+        state.initialize()
+        print(f"[✓] Database connection and schema verified at: {state.db.db_path}")
+        print("[✓] Queue manager restored cleanly.")
+        state.shutdown()
+        print("[✓] All startup sanity checks passed successfully.")
+        sys.exit(0)
 
     # ── Qt6 high-DPI
     os.environ.setdefault("QT_SCALE_FACTOR_ROUNDING_POLICY", "PassThrough")
